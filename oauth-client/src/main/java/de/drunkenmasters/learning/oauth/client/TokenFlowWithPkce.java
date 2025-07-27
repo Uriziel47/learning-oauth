@@ -12,16 +12,14 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-public class KeycloakOauthFlow {
+public class TokenFlowWithPkce {
 
 
     ClientID clientId = new ClientID("oauth-learning-client");
@@ -41,12 +39,20 @@ public class KeycloakOauthFlow {
     );
 
     public static void main(final String[] args) throws Exception {
-        var flow = new KeycloakOauthFlow();
-        var codeVerifier = new CodeVerifier("ovoi--1PigftRok-mZc7nK2ii03jnko3pmJl9r97r54");
-//        var codeVerifier = new CodeVerifier();
+        authenticate();
+        System.out.println("Done");
+    }
+
+    public static JWT authenticate() throws Exception {
+        var flow = new TokenFlowWithPkce();
+
+//        var codeVerifier = new CodeVerifier("ovoi--1PigftRok-mZc7nK2ii03jnko3pmJl9r97r54");
+        var codeVerifier = new CodeVerifier();
         var requestUri = flow.authenticateWithOpenId(codeVerifier);
-        flow.startCallback(codeVerifier);
+        var jwtToken = flow.startCallback(codeVerifier);
         System.out.println("Please login: " + requestUri);
+
+        return jwtToken.get(1, TimeUnit.MINUTES);
     }
 
     public URI authenticateWithOpenId(CodeVerifier code) throws Exception {
@@ -67,12 +73,17 @@ public class KeycloakOauthFlow {
         return request.toURI();
     }
 
-    public void startCallback(CodeVerifier code) throws Exception {
+    public CompletableFuture<JWT> startCallback(CodeVerifier code) throws Exception {
         var httpServer = HttpServer.create(new InetSocketAddress("localhost", 3000), 0);
-        var callback = Callback.of(httpServer, this);
-        callback.code(code);
-        httpServer.createContext("/callback", callback);
-        httpServer.start();
+        var jwtToken = new CompletableFuture<JWT>();
+        Executors.newVirtualThreadPerTaskExecutor().execute(() -> {
+            var callback = Callback.of(httpServer, this, jwtToken);
+            callback.code(code);
+            httpServer.createContext("/callback", callback);
+            httpServer.start();
+        });
+
+        return jwtToken;
     }
 
     public JWT requestToken(CodeVerifier codeVerifier, AuthorizationCode code) throws Exception {
@@ -91,17 +102,19 @@ public class KeycloakOauthFlow {
 
     public static class Callback implements HttpHandler {
         private final HttpServer server;
-        private final KeycloakOauthFlow flow;
+        private final TokenFlowWithPkce flow;
 
         private CodeVerifier codeVerifier;
+        private CompletableFuture<JWT> jwtToken;
 
-        private Callback(HttpServer server, KeycloakOauthFlow flow) {
+        private Callback(HttpServer server, TokenFlowWithPkce flow, CompletableFuture<JWT> jwtToken) {
             this.server = server;
             this.flow = flow;
+            this.jwtToken = jwtToken;
         }
 
-        public static Callback of(HttpServer server,  KeycloakOauthFlow flow) {
-            return new Callback(server, flow);
+        public static Callback of(HttpServer server, TokenFlowWithPkce flow, CompletableFuture<JWT> jwtToken) {
+            return new Callback(server, flow, jwtToken);
         }
 
         public void code(CodeVerifier codeVerifier) {
@@ -127,10 +140,12 @@ public class KeycloakOauthFlow {
                 var jwtToken = flow.requestToken(codeVerifier, code);
                 System.out.println("JWT: " + jwtToken.getParsedString());
                 System.out.println("Name: " + jwtToken.getJWTClaimsSet().getClaim("name"));
+                this.jwtToken.complete(jwtToken);
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
                 ex.printStackTrace();
                 exchange.sendResponseHeaders(400, 0);
+                this.jwtToken.completeExceptionally(ex);
             } finally {
                 exchange.getResponseBody().close();
             }

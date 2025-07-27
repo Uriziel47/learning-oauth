@@ -6,10 +6,9 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-public class BackLink {
+public class HttServerWithCallback {
 
     public static void main(String... args) throws Exception {
         var httpServer = HttpServer.create(new InetSocketAddress("localhost", 8090), 0);
