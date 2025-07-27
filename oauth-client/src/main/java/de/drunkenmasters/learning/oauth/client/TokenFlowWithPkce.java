@@ -1,7 +1,5 @@
 package de.drunkenmasters.learning.oauth.client;
 
-import com.nimbusds.jwt.JWT;
-import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.pkce.CodeChallengeMethod;
@@ -30,15 +28,15 @@ public class TokenFlowWithPkce implements OauthFlow {
         return new TokenFlowWithPkce(config);
     }
 
-    public CompletableFuture<JWT> authenticate(Consumer<URI> urlHandler, Scope scope) throws Exception {
+    public CompletableFuture<AuthenticationResponse> authenticate(Consumer<URI> urlHandler, Scope scope) throws Exception {
         var codeVerifier = new CodeVerifier();
         var state = new State("some random state");
 
-        var jwtToken = startCallback(codeVerifier, scope);
+        var authResponse = startCallback(codeVerifier, scope);
         var loginUri = buildRequestUri(codeVerifier, scope, state);
         urlHandler.accept(loginUri);
 
-        return jwtToken;
+        return authResponse;
     }
 
     public URI buildRequestUri(CodeVerifier code, Scope scope, State state) {
@@ -57,16 +55,22 @@ public class TokenFlowWithPkce implements OauthFlow {
         return request.toURI();
     }
 
-    public CompletableFuture<JWT> startCallback(CodeVerifier code, Scope scope) throws Exception {
+    public CompletableFuture<AuthenticationResponse> startCallback(CodeVerifier code, Scope scope) throws Exception {
         var httpServer = HttpServer.create(new InetSocketAddress("localhost", 3000), 0);
-        var jwtToken = new CompletableFuture<JWT>();
+        var authResponse = new CompletableFuture<AuthenticationResponse>();
         Executors.newVirtualThreadPerTaskExecutor().execute(() -> {
-            var callback = Callback.of(httpServer, config, code, scope, jwtToken);
+            var callback = Callback.of(
+                    httpServer,
+                    config,
+                    code,
+                    scope,
+                    authResponse
+            );
             httpServer.createContext("/callback", callback);
             httpServer.start();
         });
 
-        return jwtToken;
+        return authResponse;
     }
 
     @Slf4j
@@ -77,7 +81,7 @@ public class TokenFlowWithPkce implements OauthFlow {
 
         private final CodeVerifier codeVerifier;
         private final Scope scope;
-        private final CompletableFuture<JWT> jwtToken;
+        private final CompletableFuture<AuthenticationResponse> responseFuture;
 
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -95,21 +99,29 @@ public class TokenFlowWithPkce implements OauthFlow {
                 log.debug("Code: {}", code.getValue());
                 log.debug("CodeVerifier: {}", codeVerifier.getValue());
 
-                var jwtToken = requestToken(codeVerifier, code, scope);
-                log.debug("JWT: {}", jwtToken.getParsedString());
-                log.debug("Name: {}", jwtToken.getJWTClaimsSet().getClaim(ClaimNames.NAME.getName()));
-                this.jwtToken.complete(jwtToken);
+                var authResponse = requestToken(codeVerifier, code, scope);
+                log.debug("JWT: {}", authResponse.getAccessToken()
+                        .getParsedString());
+                log.debug("Name: {}", authResponse.getIdToken()
+                        .getJWTClaimsSet()
+                        .getClaim(ClaimNames.NAME.getName()));
+
+                responseFuture.complete(authResponse);
             } catch (Exception ex) {
                 log.error("Error during authentication", ex);
                 exchange.sendResponseHeaders(400, 0);
-                this.jwtToken.completeExceptionally(ex);
+                responseFuture.completeExceptionally(ex);
             } finally {
                 exchange.getResponseBody().close();
                 server.stop(0);
             }
         }
 
-        public JWT requestToken(CodeVerifier codeVerifier, AuthorizationCode code, Scope scope) throws Exception {
+        public AuthenticationResponse requestToken(
+                CodeVerifier codeVerifier,
+                AuthorizationCode code,
+                Scope scope
+        ) throws Exception {
             var request = new TokenRequest(
                     config.authTokenEndpoint(),
                     config.clientId(),
@@ -120,8 +132,8 @@ public class TokenFlowWithPkce implements OauthFlow {
             var response = request.toHTTPRequest().send();
             var jsonResponse = response.getBodyAsJSONObject();
             log.debug("Response: {}", jsonResponse);
-            var tokenString = jsonResponse.getAsString(ClaimNames.ACCESS_TOKEN.getName());
-            return JWTParser.parse(tokenString);
+            return AuthenticationResponseMapper.of()
+                    .from(jsonResponse);
         }
 
     }

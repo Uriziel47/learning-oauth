@@ -30,9 +30,12 @@ public class Main {
         );
 
         var flow = TokenFlowWithPkce.of(tokeFlowConfig);
-        var jwtFuture = flow.authenticate(scope);
-        var jwt =  jwtFuture.get(1, TimeUnit.MINUTES);
-        log.info("JWT: {}", jwt.getParsedString());
-        log.info("Name: {}", jwt.getJWTClaimsSet().getStringClaim(ClaimNames.NAME.getName()));
+        var authResponseFuture = flow.authenticate(scope);
+        var authResponse =  authResponseFuture.get(1, TimeUnit.MINUTES);
+        log.atInfo().log("JWT: {}", authResponse.getAccessToken()
+                .getParsedString());
+        log.atInfo().log("Name: {}", authResponse.getIdToken()
+                .getJWTClaimsSet()
+                .getClaim(ClaimNames.NAME.getName()));
     }
 }

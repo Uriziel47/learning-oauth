@@ -9,9 +9,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public interface OauthFlow {
-   CompletableFuture<JWT> authenticate(Consumer<URI> urlHandler, Scope scope) throws Exception;
+   CompletableFuture<AuthenticationResponse> authenticate(Consumer<URI> urlHandler, Scope scope) throws Exception;
 
-   default CompletableFuture<JWT> authenticate(Scope scope) throws Exception {
+   default CompletableFuture<AuthenticationResponse> authenticate(Scope scope) throws Exception {
        var logger = LoggerFactory.getLogger(OauthFlow.class);
        return authenticate(uri -> logger.info("Login via {}", uri.toString()), scope);
    }
