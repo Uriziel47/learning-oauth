@@ -18,41 +18,34 @@ import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
-public class TokenFlowWithPkce {
+public class TokenFlowWithPkce implements OauthFlow {
 
 
-    ClientID clientId = new ClientID("oauth-learning-client");
-    Secret clientSecret = new Secret("8JFFji2h0Ml1IT3EpxOM3Ls2BaVyd6mq");
-
-    URI authenticationEndpoint = URI.create("http://localhost:8080/realms/oauth-learning/protocol/openid-connect/auth");
-    URI callbackEndpoint = URI.create("http://localhost:3000/callback");
-    URI tokenEndpoint = URI.create("http://localhost:8080/realms/oauth-learning/protocol/openid-connect/token");
+    private FlowConfig config;
 
     State state = new State("some-random-state");
+    Scope scope = null;
 
-    Scope scope = new Scope(
-            "openid",
-            "basic",
-            "profile",
-            "microprofile-jwt"
-    );
 
-    public static void main(final String[] args) throws Exception {
-        authenticate();
-        System.out.println("Done");
+    public TokenFlowWithPkce(FlowConfig config) {
+        this.config = config;
     }
 
-    public static JWT authenticate() throws Exception {
-        var flow = new TokenFlowWithPkce();
+    public static final TokenFlowWithPkce of(FlowConfig config) {
+        return new TokenFlowWithPkce(config);
+    }
 
+    public CompletableFuture<JWT> authenticate(Consumer<URI> urlHandler, Scope scope) throws Exception {
+        this.scope = scope;
 //        var codeVerifier = new CodeVerifier("ovoi--1PigftRok-mZc7nK2ii03jnko3pmJl9r97r54");
         var codeVerifier = new CodeVerifier();
-        var requestUri = flow.authenticateWithOpenId(codeVerifier);
-        var jwtToken = flow.startCallback(codeVerifier);
+        var requestUri = authenticateWithOpenId(codeVerifier);
+        var jwtToken = startCallback(codeVerifier);
         System.out.println("Please login: " + requestUri);
 
-        return jwtToken.get(1, TimeUnit.MINUTES);
+        return jwtToken;
     }
 
     public URI authenticateWithOpenId(CodeVerifier code) throws Exception {
@@ -61,13 +54,13 @@ public class TokenFlowWithPkce {
 //        responseType.add(ResponseType.Value.TOKEN);
 
         var request = new AuthorizationRequest.Builder(
-                responseType, clientId
+                responseType, config.clientId()
         )
                 .state(state)
                 .scope(scope)
                 .codeChallenge(code, CodeChallengeMethod.S256)
-                .redirectionURI(callbackEndpoint)
-                .endpointURI(authenticationEndpoint)
+                .redirectionURI(config.callbackEndpoint())
+                .endpointURI(config.authenticationEndpoint())
                 .build();
 
         return request.toURI();
@@ -88,9 +81,9 @@ public class TokenFlowWithPkce {
 
     public JWT requestToken(CodeVerifier codeVerifier, AuthorizationCode code) throws Exception {
         var request = new TokenRequest(
-               tokenEndpoint,
-                clientId,
-                new AuthorizationCodeGrant(code, callbackEndpoint, codeVerifier),
+                config.authTokenEndpoint(),
+                config.clientId(),
+                new AuthorizationCodeGrant(code, config.callbackEndpoint(), codeVerifier),
                 scope
         );
 
@@ -123,7 +116,7 @@ public class TokenFlowWithPkce {
 
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            System.out.println("Received: " +  exchange.getRequestURI());
+            System.out.println("Received: " + exchange.getRequestURI());
             try {
                 var response = AuthorizationResponse.parse(exchange.getRequestURI());
                 exchange.sendResponseHeaders(200, 0);

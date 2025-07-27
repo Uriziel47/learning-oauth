@@ -1,4 +1,4 @@
-package de.drunkenmasters.learning.oauth.client;
+package de.drunkenmasters.learning.oauth.findouts;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
