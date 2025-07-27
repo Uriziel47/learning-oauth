@@ -43,9 +43,8 @@ public class TokenFlowWithPkce implements OauthFlow {
     public URI buildRequestUri(CodeVerifier code, Scope scope, State state) {
         var responseType = new ResponseType(ResponseType.Value.CODE);
 
-        var request = new AuthorizationRequest.Builder(
-                responseType, config.clientId()
-        )
+        var request = new AuthorizationRequest
+                .Builder(responseType, config.clientId())
                 .state(state)
                 .scope(scope)
                 .codeChallenge(code, CodeChallengeMethod.S256)
@@ -57,7 +56,12 @@ public class TokenFlowWithPkce implements OauthFlow {
     }
 
     public CompletableFuture<AuthenticationResponse> startCallback(CodeVerifier code, Scope scope) throws Exception {
-        var httpServer = HttpServer.create(new InetSocketAddress("localhost", 3000), 0);
+        var endpoint = config.callbackEndpoint();
+        var httpServer = HttpServer.create(
+                new InetSocketAddress(
+                        endpoint.getHost(),
+                        endpoint.getPort()),
+                0);
         var authResponse = new CompletableFuture<AuthenticationResponse>();
         Executors.newVirtualThreadPerTaskExecutor().execute(() -> {
             var callback = Callback.of(
@@ -67,7 +71,7 @@ public class TokenFlowWithPkce implements OauthFlow {
                     scope,
                     authResponse
             );
-            httpServer.createContext("/callback", callback);
+            httpServer.createContext(endpoint.getPath(), callback);
             httpServer.start();
         });
 
