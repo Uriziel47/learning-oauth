@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
@@ -89,6 +90,7 @@ public class TokenFlowWithPkce implements OauthFlow {
             try {
                 var response = AuthorizationResponse.parse(exchange.getRequestURI());
                 exchange.sendResponseHeaders(200, 0);
+                writeResponse(exchange);
                 exchange.getResponseBody().close();
 
                 log.debug("State: {}", response.getState());
@@ -113,8 +115,8 @@ public class TokenFlowWithPkce implements OauthFlow {
                 responseFuture.completeExceptionally(ex);
             } finally {
                 exchange.getResponseBody().close();
-                server.stop(0);
             }
+            server.stop(0);
         }
 
         public AuthenticationResponse requestToken(
@@ -136,5 +138,25 @@ public class TokenFlowWithPkce implements OauthFlow {
                     .from(jsonResponse);
         }
 
+        private void writeResponse(HttpExchange exchange) throws IOException {
+            try (PrintWriter writer = new PrintWriter(exchange.getResponseBody())) {
+                // language=html
+                writer.print("""
+                        <html lang="utf-8">
+                            <head>
+                                <title>redirect</title>
+                                <script>
+                                window.onload = function() {
+                                    window.close();
+                                };
+                                </script>
+                            </head>
+                            <body>
+                                <p>This window should close.</p>
+                            </body>
+                        </html>""");
+                writer.flush();
+            }
+        }
     }
 }
