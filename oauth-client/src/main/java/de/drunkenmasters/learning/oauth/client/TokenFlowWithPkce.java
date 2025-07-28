@@ -129,7 +129,7 @@ public class TokenFlowWithPkce implements OauthFlow {
                 Scope scope
         ) throws Exception {
             var request = new TokenRequest(
-                    config.authTokenEndpoint(),
+                    config.tokenEndpoint(),
                     config.clientId(),
                     new AuthorizationCodeGrant(code, config.callbackEndpoint(), codeVerifier),
                     scope

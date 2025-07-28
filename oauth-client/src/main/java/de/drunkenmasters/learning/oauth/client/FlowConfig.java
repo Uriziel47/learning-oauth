@@ -12,7 +12,6 @@ public record FlowConfig(
 
         URI authenticationEndpoint,
         URI callbackEndpoint,
-        URI authTokenEndpoint,
-        Optional<URI> refreshTokenEndpoint
+        URI tokenEndpoint
 ) {
 }
