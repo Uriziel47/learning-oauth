@@ -1,26 +1,22 @@
 package de.drunkenmasters.learning.oauth.client;
 
 import com.nimbusds.oauth2.sdk.Scope;
-import com.nimbusds.oauth2.sdk.auth.Secret;
-import com.nimbusds.oauth2.sdk.id.ClientID;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.URI;
 import java.text.ParseException;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class Main {
 
     public static void main(String... args) throws Exception {
-        var tokenFlowConfig = new FlowConfig(
-                new ClientID("oauth-learning-client"),
-                Optional.of(new Secret("8JFFji2h0Ml1IT3EpxOM3Ls2BaVyd6mq")),
-                URI.create("http://localhost:8080/realms/oauth-learning/protocol/openid-connect/auth"),
-                URI.create("http://localhost:3000/callback"),
-                URI.create("http://localhost:8080/realms/oauth-learning/protocol/openid-connect/token")
-        );
+        var tokenFlowConfig = FlowConfig.builder()
+                .clientId("oauth-learning-client")
+                .clientSecret("8JFFji2h0Ml1IT3EpxOM3Ls2BaVyd6mq")
+                .authenticationEndpoint("http://localhost:8080/realms/oauth-learning/protocol/openid-connect/auth")
+                .callbackEndpoint("http://localhost:3000/callback")
+                .tokenEndpoint("http://localhost:8080/realms/oauth-learning/protocol/openid-connect/token")
+                .build();
 
         Scope scope = new Scope(
                 "openid",
@@ -38,7 +34,7 @@ public class Main {
     private static AuthenticationResponse authenticateWithPkce(FlowConfig tokeFlowConfig, Scope scope) throws Exception {
         var flow = TokenFlowWithPkce.of(tokeFlowConfig);
         var authResponseFuture = flow.authenticate(scope);
-        var authResponse =  authResponseFuture.get(1, TimeUnit.MINUTES);
+        var authResponse = authResponseFuture.get(1, TimeUnit.MINUTES);
 
         logResponse(authResponse);
 
