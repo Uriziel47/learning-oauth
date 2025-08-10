@@ -157,6 +157,7 @@ public class TokenFlowWithPkce implements OauthFlow {
                             </head>
                             <body>
                                 <p>This window should close.</p>
+                                <script>window.close()</script>
                             </body>
                         </html>""");
                 writer.flush();
