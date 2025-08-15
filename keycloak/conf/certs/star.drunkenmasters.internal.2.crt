@@ -1,0 +1,83 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 4099 (0x1003)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=DE, ST=Bavaria, O=No Org, CN=drunkenmasters.internal Root
+        Validity
+            Not Before: Aug  4 04:29:14 2025 GMT
+            Not After : Aug  4 04:29:14 2026 GMT
+        Subject: C=DE, ST=Bavaria, O=No Org, CN=*.drunkenmasters.internal
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:c2:fa:3a:88:57:4d:57:e4:3d:f0:71:9f:02:b0:
+                    c3:e4:19:d1:e5:7f:d7:03:9b:d4:a4:9c:c1:3c:8f:
+                    0e:0d:25:b2:f5:ea:1e:81:a3:44:5a:f7:3e:27:8a:
+                    42:47:f5:ea:42:f2:2e:b6:58:92:84:42:a5:a3:45:
+                    ae:fe:cc:e6:47:a4:6b:3d:e4:be:2c:dd:dc:74:fa:
+                    66:99:76:88:18:bc:2c:7d:98:22:e8:62:7a:ac:55:
+                    2d:98:ae:9b:e4:2f:ed:dd:7f:b5:dc:d1:aa:c8:0f:
+                    8b:d7:63:2c:01:45:cf:c0:f7:19:b8:3a:29:cd:d9:
+                    d7:cc:b1:39:e1:f3:b1:0d:32:83:70:88:dd:74:e6:
+                    62:2c:d2:6a:a7:f3:af:48:41:28:01:c5:11:0d:6b:
+                    71:d5:40:4f:5a:78:57:0a:85:84:b1:f8:1e:f3:75:
+                    eb:99:6d:c8:4b:48:ff:8a:5c:b9:0c:79:bb:b0:7e:
+                    8b:be:23:50:b6:f7:f4:eb:51:fd:94:63:2a:a9:7a:
+                    2d:86:01:1e:8c:e9:7e:2e:78:00:36:8b:19:e4:da:
+                    a9:c4:ba:43:5b:35:a3:aa:88:50:ea:2a:ad:82:a8:
+                    11:9e:b6:b3:1b:a6:eb:d0:a1:10:78:84:31:45:15:
+                    91:8a:20:1a:85:30:ea:d2:0d:2b:77:52:ca:3d:7b:
+                    1a:65
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Authority Key Identifier: 
+                E2:CC:C7:70:3E:51:A9:2F:0E:E6:57:A9:75:4A:C5:F9:56:41:71:2D
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            X509v3 Subject Alternative Name: 
+                DNS:*.drunkenmasters.internal, DNS:*.drunkenmasters.de.internal, DNS:drunkenmasters.internal, DNS:drunkenmasters.de.internal
+            X509v3 Subject Key Identifier: 
+                76:3D:42:3D:45:32:1A:AF:D5:D9:D3:E2:D5:D2:13:FA:62:1A:A1:18
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        90:4f:0c:60:15:a5:d5:fd:ba:62:40:33:fe:43:a8:11:4d:68:
+        de:b1:04:bc:dc:44:6a:6c:e2:ac:62:bf:28:08:50:73:a3:51:
+        ee:d4:25:c9:05:42:4e:80:83:17:8a:ed:47:69:90:e4:c9:21:
+        9a:58:c4:6e:cf:6c:dc:9a:a8:2f:87:2b:6b:a1:03:65:5b:d4:
+        e7:ea:ee:9b:56:1c:32:51:cf:2e:39:72:1d:9c:1c:66:9c:d5:
+        d2:f7:a9:86:f4:98:a3:90:3a:47:f3:74:6c:24:d5:2a:4a:0f:
+        58:a3:6d:e6:52:15:e3:c9:91:84:ad:e4:62:c9:a3:8b:ff:cb:
+        c6:2c:50:aa:22:62:0b:89:b3:6d:67:72:2e:01:75:25:ef:fe:
+        e4:d7:13:b1:7f:e0:7f:c8:b9:43:a2:97:50:a1:91:10:43:54:
+        70:40:25:65:31:c4:13:d4:ed:00:28:ea:e0:74:14:f4:1b:f4:
+        07:d9:fc:95:a9:56:49:ef:3e:d6:e3:d0:ef:74:bd:8d:e3:a5:
+        2a:08:8e:93:9c:00:5a:7a:8f:5f:66:4a:f8:02:15:02:98:39:
+        1c:d5:d4:7f:31:a3:3b:6c:2b:f4:f1:0e:a6:27:ec:9f:50:77:
+        38:81:51:13:7d:9f:ff:da:53:6d:7d:b9:b4:d6:01:4b:60:79:
+        2e:4d:2e:d5
+-----BEGIN CERTIFICATE-----
+MIID7zCCAtegAwIBAgICEAMwDQYJKoZIhvcNAQELBQAwVzELMAkGA1UEBhMCREUx
+EDAOBgNVBAgMB0JhdmFyaWExDzANBgNVBAoMBk5vIE9yZzElMCMGA1UEAwwcZHJ1
+bmtlbm1hc3RlcnMuaW50ZXJuYWwgUm9vdDAeFw0yNTA4MDQwNDI5MTRaFw0yNjA4
+MDQwNDI5MTRaMFQxCzAJBgNVBAYTAkRFMRAwDgYDVQQIDAdCYXZhcmlhMQ8wDQYD
+VQQKDAZObyBPcmcxIjAgBgNVBAMMGSouZHJ1bmtlbm1hc3RlcnMuaW50ZXJuYWww
+ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDC+jqIV01X5D3wcZ8CsMPk
+GdHlf9cDm9SknME8jw4NJbL16h6Bo0Ra9z4nikJH9epC8i62WJKEQqWjRa7+zOZH
+pGs95L4s3dx0+maZdogYvCx9mCLoYnqsVS2YrpvkL+3df7Xc0arID4vXYywBRc/A
+9xm4OinN2dfMsTnh87ENMoNwiN105mIs0mqn869IQSgBxRENa3HVQE9aeFcKhYSx
++B7zdeuZbchLSP+KXLkMebuwfou+I1C29/TrUf2UYyqpei2GAR6M6X4ueAA2ixnk
+2qnEukNbNaOqiFDqKq2CqBGetrMbpuvQoRB4hDFFFZGKIBqFMOrSDSt3Uso9expl
+AgMBAAGjgccwgcQwHwYDVR0jBBgwFoAU4szHcD5RqS8O5lepdUrF+VZBcS0wCQYD
+VR0TBAIwADB3BgNVHREEcDBughkqLmRydW5rZW5tYXN0ZXJzLmludGVybmFsghwq
+LmRydW5rZW5tYXN0ZXJzLmRlLmludGVybmFsghdkcnVua2VubWFzdGVycy5pbnRl
+cm5hbIIaZHJ1bmtlbm1hc3RlcnMuZGUuaW50ZXJuYWwwHQYDVR0OBBYEFHY9Qj1F
+Mhqv1dnT4tXSE/piGqEYMA0GCSqGSIb3DQEBCwUAA4IBAQCQTwxgFaXV/bpiQDP+
+Q6gRTWjesQS83ERqbOKsYr8oCFBzo1Hu1CXJBUJOgIMXiu1HaZDkySGaWMRuz2zc
+mqgvhytroQNlW9Tn6u6bVhwyUc8uOXIdnBxmnNXS96mG9JijkDpH83RsJNUqSg9Y
+o23mUhXjyZGEreRiyaOL/8vGLFCqImILibNtZ3IuAXUl7/7k1xOxf+B/yLlDopdQ
+oZEQQ1RwQCVlMcQT1O0AKOrgdBT0G/QH2fyVqVZJ7z7W49DvdL2N46UqCI6TnABa
+eo9fZkr4AhUCmDkc1dR/MaM7bCv08Q6mJ+yfUHc4gVETfZ//2lNtfbm01gFLYHku
+TS7V
+-----END CERTIFICATE-----
