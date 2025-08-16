@@ -1,10 +1,14 @@
 package de.drunkenmasters.learning.oauth.integration;
 
 import com.nimbusds.oauth2.sdk.Scope;
+import dasniko.testcontainers.keycloak.KeycloakContainer;
+import de.drunkenmasters.learning.oauth.TestProperties;
 import de.drunkenmasters.learning.oauth.client.FlowConfig;
 import de.drunkenmasters.learning.oauth.client.TokenFlowWithPkce;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.CookieManager;
@@ -23,14 +27,56 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 public class LoginTest {
 
+    private static KeycloakContainer keycloakContainer;
+    private static TestProperties.Keycloak keycloakConfig;
+    private static TestProperties.Container containerConfig;
+    private static boolean reuseContainer;
+
+    @BeforeAll
+    static void beforeAll() {
+        var testConfig = TestProperties.of();
+        containerConfig = testConfig.getContainer();
+        reuseContainer = containerConfig.isReuse();
+        reuseContainer = false;
+        keycloakConfig = testConfig.getKeycloak();
+
+        keycloakContainer = new KeycloakContainer(keycloakConfig.getDockerImage())
+//                .withExtraHost(keycloakConfig.getHost(), "127.0.0.1")
+                .useTls(
+                        keycloakConfig.getCertificate(),
+                        keycloakConfig.getCertificateKey()
+                )
+                .withReuse(reuseContainer)
+                .withRealmImportFiles(
+                        "realms/oauth-testing/oauth-testing-realm.json",
+                        "realms/oauth-testing/oauth-testing-users-0.json"
+                )
+                .withLabels(containerConfig.getContainerLabels());
+        keycloakContainer.start();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        if (reuseContainer == false) {
+            keycloakContainer.stop();
+        }
+    }
+
     @Test
     void login() throws Exception {
+//        var tokenFlowConfig = FlowConfig.builder()
+//                .clientId("oauth-learning-client")
+//                .clientSecret("8JFFji2h0Ml1IT3EpxOM3Ls2BaVyd6mq")
+//                .authenticationEndpoint("https://keycloak.drunkenmasters.internal:8443/realms/oauth-testing/protocol/openid-connect/auth")
+//                .callbackEndpoint("http://localhost:3000/callback")
+//                .tokenEndpoint("https://keycloak.drunkenmasters.internal:8443/realms/oauth-testing/protocol/openid-connect/token")
+//                .build();
+        var port = keycloakContainer.getHttpsPort();
         var tokenFlowConfig = FlowConfig.builder()
-                .clientId("oauth-learning-client")
-                .clientSecret("8JFFji2h0Ml1IT3EpxOM3Ls2BaVyd6mq")
-                .authenticationEndpoint("https://keycloak.drunkenmasters.internal:8443/realms/oauth-testing/protocol/openid-connect/auth")
+                .clientId("authflow-client")
+                .authenticationEndpoint("https://keycloak.drunkenmasters.internal:" + port + "/realms/oauth-testing/protocol/openid-connect/auth")
                 .callbackEndpoint("http://localhost:3000/callback")
-                .tokenEndpoint("https://keycloak.drunkenmasters.internal:8443/realms/oauth-testing/protocol/openid-connect/token")
+                .tokenEndpoint("https://keycloak.drunkenmasters.internal:" + port + "/realms/oauth-testing/protocol/openid-connect/token")
                 .build();
 
         Scope scope = new Scope(
@@ -43,12 +89,12 @@ public class LoginTest {
         var flow = TokenFlowWithPkce.of(tokenFlowConfig);
         var authResponseFuture = flow.authenticate(this::usernamePasswordLogin, scope);
         var authResponse = authResponseFuture.get(1, TimeUnit.MINUTES);
-        System.out.println(authResponse.getAccessToken().getParsedString());
+        log.atInfo().log("AccessToken:\n{}", authResponse.getAccessToken().getParsedString());
         assertThat(authResponse).isNotNull();
     }
 
     private void usernamePasswordLogin(URI loginUri) {
-        System.out.println("Login: "  + loginUri);
+        System.out.println("Login: " + loginUri);
         var cookieManager = new CookieManager();
         var httpClient = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
@@ -76,7 +122,7 @@ public class LoginTest {
                     "password", "x");
             var formBody = formData.entrySet().stream()
                     .map(e ->
-                                    URLEncoder.encode(e.getKey(), StandardCharsets.UTF_8)
+                            URLEncoder.encode(e.getKey(), StandardCharsets.UTF_8)
                                     + "="
                                     + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8)
                     )
@@ -98,7 +144,7 @@ public class LoginTest {
                         .uri(URI.create(callbackUri))
                         .GET()
                         .build();
-                var callbackResponse =  httpClient.send(callbackRequest, HttpResponse.BodyHandlers.ofString());
+                var callbackResponse = httpClient.send(callbackRequest, HttpResponse.BodyHandlers.ofString());
                 log.atInfo().log("Callback status: {}", callbackResponse.statusCode());
                 cookieManager.getCookieStore().getCookies().stream()
                         .forEach(cookie -> log.atInfo().log(cookie.toString()));

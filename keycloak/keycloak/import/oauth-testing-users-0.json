@@ -1,0 +1,27 @@
+{
+  "realm" : "oauth-testing",
+  "users" : [ {
+    "id" : "696841df-f647-4489-ad14-642f87998b1d",
+    "username" : "work",
+    "firstName" : "William",
+    "lastName" : "Worker",
+    "email" : "work@drunkenmasters.internal",
+    "emailVerified" : true,
+    "enabled" : true,
+    "createdTimestamp" : 1755316610651,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "ea0b6a99-9c72-4799-b0e0-cca7b0603219",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1755316618439,
+      "secretData" : "{\"value\":\"mIcEEpenosJAXuWTmsrzWlXxCJpjrjA94sX38MEju4E=\",\"salt\":\"Xwb3OcQON5k8YA40C78AlA==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-oauth-testing" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}
